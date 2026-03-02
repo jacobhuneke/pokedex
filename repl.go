@@ -113,6 +113,16 @@ func newRegistry() map[string]cliCommand {
 		cfg: c,
 	}
 
+	registry["pokedex"] = cliCommand{
+		name:        "pokedex",
+		description: "prints a list of all Pokemon you have caught",
+		arg:         "",
+		callback: func(arg string) error {
+			return commandPokedex(c)
+		},
+		cfg: c,
+	}
+
 	return registry
 }
 
@@ -136,6 +146,14 @@ func commandHelp(registry map[string]cliCommand) error {
 	for cmd := range registry {
 		str := cmd + ": " + registry[cmd].description
 		fmt.Println(str)
+	}
+	return nil
+}
+
+func commandPokedex(c *config) error {
+	fmt.Println("Your Pokedex:")
+	for key := range c.pokedex {
+		fmt.Printf(" - %s\n", key)
 	}
 	return nil
 }
