@@ -56,3 +56,12 @@ func GetDataLoc(body []byte) (LocationData, error) {
 	}
 	return data, nil
 }
+
+func GetPokeData(body []byte) (PokemonData, error) {
+	data := PokemonData{}
+	e := json.Unmarshal(body, &data)
+	if e != nil {
+		return PokemonData{}, e
+	}
+	return data, nil
+}

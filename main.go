@@ -16,26 +16,19 @@ func main() {
 			str := scanner.Text()
 			strs := cleanInput(str)
 			command, ok := registry[strs[0]]
-			var arg string
-			okarg := true
-			if command.name == "explore" {
-				if len(strs) <= 1 {
-					okarg = false
+			if ok {
+				if len(strs) > 1 {
+					arg := strs[1]
+					command.callback(arg)
+				} else if command.name == "explore" {
+					fmt.Println("you must provide a location")
+				} else if command.name == "catch" {
+					fmt.Println("you must provide a pokemon")
+				} else {
+					command.callback("")
 				}
-			}
-
-			if len(strs) > 1 {
-				arg = strs[1]
 			} else {
-				arg = ""
-			}
-
-			if ok && okarg {
-				command.callback(arg)
-			} else if okarg {
 				fmt.Println("Unknown command")
-			} else {
-				fmt.Println("you must provide a location")
 			}
 		}
 	}
