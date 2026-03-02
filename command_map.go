@@ -7,12 +7,12 @@ import (
 )
 
 func commandMap(c *config) error {
-	body, err := pokeapi.OpenFile(c.nextURL)
+	body, err := c.client.OpenFile(c.nextURL)
 	if err != nil {
 		return err
 	}
 
-	data, err := pokeapi.GetDataLoc(body)
+	data, err := pokeapi.GetDataAreaLoc(body)
 	if err != nil {
 		return err
 	}
@@ -36,12 +36,12 @@ func commandMapb(c *config) error {
 		return nil
 	}
 
-	body, err := pokeapi.OpenFile(c.nextURL)
+	body, err := c.client.OpenFile(c.previousURL)
 	if err != nil {
 		return err
 	}
 
-	data, err := pokeapi.GetDataLoc(body)
+	data, err := pokeapi.GetDataAreaLoc(body)
 	if err != nil {
 		return err
 	}

@@ -4,26 +4,36 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
+
+	"github.com/jacobhuneke/pokedex/internal/pokeapi"
+	"github.com/jacobhuneke/pokedex/internal/pokecache"
 )
 
 type config struct {
 	nextURL     string
 	previousURL string
+	client      *pokeapi.Client
 }
 
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
-	location    *config
+	location    string
+	callback    func(arg string) error
+	cfg         *config
 }
 
-func initConfig() config {
+func initConfig() *config {
+	apiClient := pokeapi.Client{
+		Cache: *pokecache.NewCache(time.Minute * 5),
+	}
 	c := config{
 		nextURL:     "https://pokeapi.co/api/v2/location-area//",
 		previousURL: "",
+		client:      &apiClient,
 	}
-	return c
+	return &c
 }
 
 func newRegistry() map[string]cliCommand {
@@ -33,35 +43,51 @@ func newRegistry() map[string]cliCommand {
 	registry["exit"] = cliCommand{
 		name:        "exit",
 		description: "Exit the Pokedex",
-		callback:    commandExit,
-		location:    &c,
+		location:    "",
+		callback: func(arg string) error {
+			return commandExit()
+		},
+		cfg: c,
 	}
 
 	registry["help"] = cliCommand{
 		name:        "help",
 		description: "Displays a help message",
-		callback: func() error {
+		location:    "",
+		callback: func(arg string) error {
 			return commandHelp(registry)
 		},
-		location: &c,
+		cfg: c,
 	}
 
 	registry["map"] = cliCommand{
 		name:        "map",
 		description: "Displays the names of the next 20 location areas in the Pokemon world",
-		callback: func() error {
-			return commandMap(&c)
+		location:    "",
+		callback: func(arg string) error {
+			return commandMap(c)
 		},
-		location: &c,
+		cfg: c,
 	}
 
 	registry["mapb"] = cliCommand{
 		name:        "mapb",
 		description: "Displays the names of the last 20 location areas",
-		callback: func() error {
-			return commandMapb(&c)
+		location:    "",
+		callback: func(arg string) error {
+			return commandMapb(c)
 		},
-		location: &c,
+		cfg: c,
+	}
+
+	registry["explore"] = cliCommand{
+		name:        "explore",
+		description: "lists all pokemon in location area",
+		location:    "",
+		callback: func(arg string) error {
+			return commandExplore(c, arg)
+		},
+		cfg: c,
 	}
 
 	return registry
