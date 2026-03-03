@@ -1,0 +1,5 @@
+charmander
+pikachu
+squirtle
+pidgey
+tentacool

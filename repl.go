@@ -25,30 +25,61 @@ type cliCommand struct {
 	cfg         *config
 }
 
-func initConfig() *config {
+func readMD() []byte {
+	data, err := os.ReadFile("user.md")
+	if err != nil {
+		return nil
+	}
+	return data
+}
+
+func initConfig() (*config, error) {
 	apiClient := pokeapi.Client{
 		Cache: *pokecache.NewCache(time.Minute * 5),
 	}
 	pokedex := make(map[string]pokeapi.PokemonData)
+	bytes := readMD()
+	if bytes != nil {
+		str := string(bytes)
+		pokemon := strings.Split(str, "\n")
+		for _, p := range pokemon {
+			if p != "" && p != "\n" {
+				fullURL := "https://pokeapi.co/api/v2/pokemon/" + p + "/"
+				pokeBody, err := apiClient.OpenFile(fullURL)
+				if err != nil {
+					return nil, err
+				}
+
+				pokeData, err := pokeapi.GetPokeData(pokeBody)
+				if err != nil {
+					return nil, err
+				}
+				pokedex[p] = pokeData
+			}
+		}
+	}
 	c := config{
 		nextURL:     "https://pokeapi.co/api/v2/location-area//",
 		previousURL: "",
 		client:      &apiClient,
 		pokedex:     pokedex,
 	}
-	return &c
+	return &c, nil
 }
 
 func newRegistry() map[string]cliCommand {
 	registry := make(map[string]cliCommand)
-	c := initConfig()
+	c, ok := initConfig()
+	if ok != nil {
+		return nil
+	}
 
 	registry["exit"] = cliCommand{
 		name:        "exit",
 		description: "Exit the Pokedex",
 		arg:         "",
 		callback: func(arg string) error {
-			return commandExit()
+			return commandExit(c)
 		},
 		cfg: c,
 	}
@@ -133,8 +164,18 @@ func cleanInput(text string) []string {
 	return strs
 }
 
-func commandExit() error {
+func commandExit(c *config) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
+
+	pokemon := []string{}
+	for poke := range c.pokedex {
+		pokemon = append(pokemon, poke)
+	}
+	data := []byte(strings.Join(pokemon, "\n"))
+	err := os.WriteFile("user.md", data, 0644)
+	if err != nil {
+		return err
+	}
 	os.Exit(0)
 	return nil
 }

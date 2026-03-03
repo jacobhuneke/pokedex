@@ -24,6 +24,8 @@ func main() {
 					fmt.Println("you must provide a location")
 				} else if command.name == "catch" {
 					fmt.Println("you must provide a pokemon")
+				} else if command.name == "inspect" {
+					fmt.Println("you must provide a pokemon")
 				} else {
 					command.callback("")
 				}
